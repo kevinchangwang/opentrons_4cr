@@ -43,26 +43,34 @@ pipette_mount = 'left'
 # Indicate the location of each component here
 
 # Linker locations
-linker_dict = {
-    'A1': ['1', '2'],
-    'A2': ['3', '4'],
-    'A3': ['5', '6'],
-    'A4': ['7', '8'],
-    'A5': ['9', '10'],
-    'A6': ['11', '12']
+linker_dict_1 = {
+    '1': '1',
+    '2': '3',
+    '3': '5',
+    '4': '7',
+    '5': '9',
+    '6': '11'
+}
+linker_dict_2 = {
+    '1': '2',
+    '2': '4',
+    '3': '6',
+    '4': '8',
+    '5': '10',
+    '6': '12'
 }
 # Tail A locations
-tail_A_dict = {
-    'A7': ['1', '3', '5', '7', '9', '11'],
-    'A8': ['2', '4', '6', '8', '10', '12']
-}
+tail_A1_A2_location = '7'
+tail_A1_A2_destination = ['1', '3', '5', '7', '9', '11']
+tail_A2_A4_location = '8'
+tail_A2_A4_destination = ['2', '4', '6', '8', '10', '12']
 
 # Tail B locations
-tail_B_location = 'A9'
+tail_B_location = '9'
 
 # Headgroup locations
-headgroup_1_location = 'A10'
-headgroup_2_location = 'A11'
+headgroup_1_location = '10'
+headgroup_2_location = '11'
 
 
 def run(protocol: protocol_api.ProtocolContext):
@@ -95,33 +103,35 @@ def run(protocol: protocol_api.ProtocolContext):
     # distribute headgroups to empty plate
     pipette.transfer(component_volume, source_plate.columns_by_name()[headgroup_1_location],
                      destination_plate_1.wells(), new_tip='never')
-    pipette.drop_tip()
     pipette.transfer(component_volume, source_plate.columns_by_name()[headgroup_2_location],
                      destination_plate_2.wells(), new_tip='never')
     pipette.drop_tip()
-
     # distribute linkers
-    pipette.pick_up_tip()
-    for component in linker_dict:
+    for component in linker_dict_1:
         pipette.transfer(component_volume, source_plate.columns_by_name()[component],
-                         destination_plate_1.columns_by_name()[linker_dict[component]], new_tip='always')
+                         destination_plate_1.columns_by_name()[linker_dict_1[component]], new_tip='always')
         pipette.transfer(component_volume, source_plate.columns_by_name()[component],
-                         destination_plate_2.columns_by_name()[linker_dict[component]], new_tip='always')
-    pipette.drop_tip()
+                         destination_plate_2.columns_by_name()[linker_dict_1[component]], new_tip='always')
+    for component in linker_dict_2:
+        pipette.transfer(component_volume, source_plate.columns_by_name()[component],
+                         destination_plate_1.columns_by_name()[linker_dict_2[component]], new_tip='always')
+        pipette.transfer(component_volume, source_plate.columns_by_name()[component],
+                         destination_plate_2.columns_by_name()[linker_dict_2[component]], new_tip='always')
 
     # distribute tail A
-    pipette.pick_up_tip()
-    for component in tail_A_dict:
-        pipette.transfer(component_volume, source_plate.columns_by_name()[component],
-                         destination_plate_1.columns_by_name()[tail_A_dict[component]], new_tip='always')
-        pipette.transfer(component_volume, source_plate.columns_by_name()[component],
-                         destination_plate_2.columns_by_name()[tail_A_dict[component]], new_tip='always')
-    pipette.drop_tip()
+    for component in tail_A1_A2_destination:
+        pipette.transfer(component_volume, source_plate.columns_by_name()[tail_A1_A2_location],
+                         destination_plate_1.columns_by_name()[component], new_tip='always')
+        pipette.transfer(component_volume, source_plate.columns_by_name()[tail_A1_A2_location],
+                         destination_plate_2.columns_by_name()[component], new_tip='always')
+    for component in tail_A2_A4_destination:
+        pipette.transfer(component_volume, source_plate.columns_by_name()[tail_A2_A4_location],
+                         destination_plate_1.columns_by_name()[component], new_tip='always')
+        pipette.transfer(component_volume, source_plate.columns_by_name()[tail_A2_A4_location],
+                         destination_plate_2.columns_by_name()[component], new_tip='always')
 
     # distribute tail B
-    pipette.pick_up_tip()
     pipette.transfer(component_volume, source_plate.columns_by_name()[tail_B_location], destination_plate_1.wells(),
                      new_tip='always')
     pipette.transfer(component_volume, source_plate.columns_by_name()[tail_B_location], destination_plate_2.wells(),
                      new_tip='always')
-    pipette.drop_tip()
