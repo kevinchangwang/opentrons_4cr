@@ -2,14 +2,15 @@ from opentrons import protocol_api
 
 # metadata
 metadata = {
-    'protocolName': "4CR lipids to nanoparticle, sequential plates",
+    'protocolName': "4CR lipids to nanoparticle",
     'author': 'Kevin <kevinchang.wang@mail.utoronto.ca',
-    'description': 'Opentrons liquid dispensing protocol for 4cr lipid nanoparticle formation',
+    'description': 'Opentrons liquid dispensing protocol for 4cr lipid nanoparticle formation, sequential',
     'apiLevel': '2.12'
 }
 
-# Set to True to include an optional pause after adding IL to EtOH MM in LNP plates
-pause_after_adding = False
+# Set to True to include optional pause
+centrifuge_pause = False
+between_plate_pause = False
 
 # Set the component amounts here
 etoh_mm_amount = 2.9
@@ -92,8 +93,16 @@ def run(protocol: protocol_api.ProtocolContext):
     pipette.transfer(il_amount, h1_il_source_plate.wells(), h1_lnp_dest_plate.wells(), new_tip='always')
 
     # Optional pause
-    if pause_after_adding:
+    if centrifuge_pause:
         protocol.pause('Centrifuge time')
+
+    # Transfer aqueous MM to H1 LNP destination plate, mix
+    pipette.transfer(aq_mm_amount, aq_mm_source_plate.columns_by_name()[aq_mm_well], h1_lnp_dest_plate.wells(),
+                     new_tip='always', mix_after=(5, aq_mm_amount))
+
+    # Optional pause
+    if between_plate_pause:
+        protocol.pause('Next plate')
 
     # Transfer EtOH MM to H2 LNP destination plate
     pipette.pick_up_tip()
@@ -105,12 +114,12 @@ def run(protocol: protocol_api.ProtocolContext):
     pipette.transfer(il_amount, h2_il_source_plate.wells(), h2_lnp_dest_plate.wells(), new_tip='always')
 
     # Optional pause
-    if pause_after_adding:
+    if centrifuge_pause:
         protocol.pause('Centrifuge time')
 
-    # Transfer aqueous MM to H1 LNP destination plate, mix
-    pipette.transfer(aq_mm_amount, aq_mm_source_plate.columns_by_name()[aq_mm_well], h1_lnp_dest_plate.wells(),
-                     new_tip='always', mix_after=(5, aq_mm_amount))
     # Transfer aqueous MM to H2 LNP destination plate, mix
     pipette.transfer(aq_mm_amount, aq_mm_source_plate.columns_by_name()[aq_mm_well], h2_lnp_dest_plate.wells(),
                      new_tip='always', mix_after=(5, aq_mm_amount))
+
+
+
